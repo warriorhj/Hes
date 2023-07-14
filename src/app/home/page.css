@@ -1,0 +1,13 @@
+.aside{
+    min-width: 220px;
+}
+
+.demo-logo-vertical{
+    height: 50px;
+    margin: 10px;
+    background-color: #334453;
+    border-radius: 5px;
+    text-align: center;
+    color: whitesmoke;
+    line-height: 50px;
+}
