@@ -4,11 +4,11 @@
  * @Author: Hao
  * @Date: 2023-07-14 13:42:53
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-14 16:12:45
+ * @LastEditTime: 2023-07-14 17:41:33
  * @FilePath: \hes\src\app\home\meterInfo\page.tsx
  */
 'use client'
-import {useState} from 'react'
+import {useState, useEffect} from 'react'
 import {Table, Tag, Space, Input, Button, Modal, Form} from "antd";
 import type {ColumnsType} from 'antd/es/table';
 import * as dayjs from 'dayjs';
@@ -88,13 +88,28 @@ const meterInfo: React.FC = () =>{
             metermode: 2
         },
         {
-            meterno: "1111015600",
+            meterno: "11110156001",
             protocol: 3,
             builddata: new Date(2007,0,12,22,19,35),
             metertype: 4,
             metermode: 2
         }
       ])
+
+    const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+
+    const [isDisable, setIsDisabled] = useState(true)
+
+    const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+        console.log('selectedRowKeys changed: ', newSelectedRowKeys);
+        setSelectedRowKeys(newSelectedRowKeys);
+      };
+
+    const rowSelection = {
+        selectedRowKeys,
+        onChange: onSelectChange,
+    }
+    
 
     // 表达确认
     const handleOk = () => {
@@ -120,6 +135,18 @@ const meterInfo: React.FC = () =>{
         // 搜索产品进行更新table列表
     }
 
+    const handleBatchDelete = () =>{
+        console.log('批量删除ID', selectedRowKeys);
+    }
+
+    useEffect(() => {
+
+        setIsDisabled(selectedRowKeys.length ? false : true)
+
+    },[selectedRowKeys])
+
+    
+
     
     return (
         <>
@@ -128,11 +155,13 @@ const meterInfo: React.FC = () =>{
                 <Input placeholder="meterno" onChange={handleChange} style={{width: 150, margin: 10}}/>
                 <Button type='default' >Query</Button>
                 <Button type='primary'onClick={()=>setIsModalOpen(true)}>Add</Button>
-                <Button type='primary' danger>Batch delete</Button>
+                <Button type='primary' danger disabled={isDisable} onClick={handleBatchDelete}>Batch delete</Button>
             </div>
             <Table
+                rowSelection={rowSelection}
                 columns={columns}  
-                dataSource={dataSource}  
+                dataSource={dataSource}
+                rowKey={(record)=>record.meterno} 
             >
             </Table>
             <Modal title="Add Meter" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
