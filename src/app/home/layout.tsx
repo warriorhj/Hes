@@ -4,8 +4,8 @@
  * @Author: Hao
  * @Date: 2023-07-14 13:34:07
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-14 13:38:47
- * @FilePath: \hes\src\app\home\layout.tsx
+ * @LastEditTime: 2023-07-14 20:58:59
+ * @FilePath: \Hes\src\app\home\layout.tsx
  */
 'use client'
 import React, { useState, useEffect } from 'react';
@@ -20,9 +20,29 @@ import {
 } from '@ant-design/icons';
 import { Layout, Menu, Button, theme, Table, Tag, Space } from 'antd';
 import * as dayjs from 'dayjs';
+import { useRouter } from 'next/navigation';
 import type {ColumnsType} from 'antd/es/table';
+import type { MenuProps } from 'antd';
 import  './page.css'
 const { Header, Sider, Content } = Layout;
+
+const items: MenuProps['items'] = [
+  {
+    key: 'management',
+    icon: <CloudUploadOutlined />,
+    label: 'archives management',
+    children: [{
+      key: 'meterInfo',
+      label: 'meterInfo',
+      icon: <SlidersOutlined />
+    },{
+      key: 'dcuInfo',
+      label: 'dcuInfo',
+      icon: <SlidersOutlined />
+    }]
+  }
+]
+
 
 export default function ContentLayout({
     children
@@ -35,30 +55,25 @@ export default function ContentLayout({
         token: { colorBgContainer },
     } = theme.useToken();
 
+    const router = useRouter();
+
+    const handleClick = (e: any) => {
+      router.push(`/home/${e.key}`)
+      // console.log(e, router)
+    }
+
+    
+
     return (
-        <Layout>
-        <Sider trigger={null} collapsible collapsed={collapsed}>
+        <Layout style={{minHeight:'100vh'}}>
+        <Sider trigger={null} collapsible collapsed={collapsed} width={300}>
           <div className="demo-logo-vertical">京仪北方HES</div>
           <Menu
             theme="dark"
             mode="inline"
             defaultSelectedKeys={['1']}
-            items={[
-              {
-                key: '1',
-                icon: <CloudUploadOutlined />,
-                label: 'archives management',
-                children: [{
-                  key: 'meterInfo',
-                  label: 'meterInfo',
-                  icon: <SlidersOutlined />
-                },{
-                  key: 'dcuInfo',
-                  label: 'dcuInfo',
-                  icon: <SlidersOutlined />
-                }]
-              }
-            ]}
+            items={items}
+            onClick={handleClick}
           />
         </Sider>
         <Layout>

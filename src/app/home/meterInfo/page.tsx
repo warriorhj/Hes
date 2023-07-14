@@ -4,11 +4,11 @@
  * @Author: Hao
  * @Date: 2023-07-14 13:42:53
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-14 17:41:33
- * @FilePath: \hes\src\app\home\meterInfo\page.tsx
+ * @LastEditTime: 2023-07-15 00:25:10
+ * @FilePath: \Hes\src\app\home\meterInfo\page.tsx
  */
 'use client'
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useRef, createRef} from 'react'
 import {Table, Tag, Space, Input, Button, Modal, Form} from "antd";
 import type {ColumnsType} from 'antd/es/table';
 import * as dayjs from 'dayjs';
@@ -21,57 +21,65 @@ interface MeterType {
     metermode: number
 }
 
-const columns: ColumnsType<MeterType> = [
-    {
-        title: 'meterno',
-        dataIndex: 'meterno',
-        key: 'meterno',
-    },
-    {
-        title: 'protocol',
-        dataIndex: 'protocol',
-        key: 'protocol',
-        render: (val) => <Tag>{val || '-'}</Tag>
-    },
-    {
-        title: 'builddata',
-        dataIndex: 'builddata',
-        key: 'builddata',
-        render: (val) => dayjs(val).format("YYYY-MM-DD HH:mm:ss")
-    },
-    {
-        title: 'metertype',
-        key: 'metertype',
-        dataIndex: 'metertype',
-        render: (val) => <Tag>{val}</Tag>
-    },
-    {
-        title: 'metermode',
-        key: 'metermode',
-        dataIndex: 'metermode',
-        render: (val) => <Tag>{val}</Tag>
-    },
-    {
-        title: 'Operation',
-        key: 'action',
-        dataIndex: 'action',
-        render: (_, record) => (
-        <Space size="middle">
-            <a>Change</a>
-            <a>Delete</a>
-            <a>ReadData</a>
-            <a>SendToken</a>
-            <a>Action</a>
-        </Space>
-        ),
-    }
-]
+
 
 // const dataSource: MeterType[] = ;
 
 
 const meterInfo: React.FC = () =>{
     
+    const columns: ColumnsType<MeterType> = [
+        {
+            title: 'meterno',
+            dataIndex: 'meterno',
+            key: 'meterno',
+            align: 'center',
+        },
+        {
+            title: 'protocol',
+            dataIndex: 'protocol',
+            key: 'protocol',
+            align: 'center',
+            render: (val) => <Tag>{val || '-'}</Tag>
+        },
+        {
+            title: 'builddata',
+            dataIndex: 'builddata',
+            key: 'builddata',
+            align: 'center',
+            render: (val) => dayjs(val).format("YYYY-MM-DD HH:mm:ss")
+        },
+        {
+            title: 'metertype',
+            key: 'metertype',
+            dataIndex: 'metertype',
+            align: 'center',
+            render: (val) => <Tag>{val}</Tag>
+        },
+        {
+            title: 'metermode',
+            key: 'metermode',
+            dataIndex: 'metermode',
+            align: 'center',
+            render: (val) => <Tag>{val}</Tag>
+        },
+        {
+            title: 'Operation',
+            key: 'action',
+            dataIndex: 'action',
+            align: 'center',
+            render: (_, record) => (
+            <Space size="middle">
+                <Button type='link' onClick={() => handleChangeMeter(record)}>Change</Button>
+                <Button type='link'>Delete</Button>
+                <Button type='link'>ReadData</Button>
+                <Button type='link'>SendToken</Button>
+                <Button type='link'>Action</Button>
+            </Space>
+            ),
+        }
+    ]
+
     // 查询Input框
     const [meterQuery, setmeterQuery] = useState('');
     // 获取antd的form
@@ -131,12 +139,44 @@ const meterInfo: React.FC = () =>{
     };
 
     const handleChange = (value: any)=>{
-        console.log(value.target.value)
+        // console.log(value.target.value)
         // 搜索产品进行更新table列表
+        setmeterQuery(value.target.value)
     }
 
     const handleBatchDelete = () =>{
         console.log('批量删除ID', selectedRowKeys);
+    }
+
+    const inputRef = createRef();
+    const [modelTitle, setModelTitle] = useState('');
+
+    // 查询接口
+    const handleQuery = () =>{
+        // 请求
+        
+        setmeterQuery('')
+    }
+
+    // 添加meter按钮
+    const handleAddMeter = () =>{
+        setIsModalOpen(true)
+        setModelTitle('Add Meter')
+    }
+
+    // table中的修改按钮
+    const handleChangeModal = () =>{
+        setIsModalOpen(true)
+        setModelTitle('Change Meter')
+    }
+   
+    // 修改meter按钮
+    const handleChangeMeter = (value: any) =>{
+        // 打开对话框，设置form的值
+        
+        setIsModalOpen(true)
+        form.setFieldsValue(value)
+        // console.log(value)
     }
 
     useEffect(() => {
@@ -146,15 +186,14 @@ const meterInfo: React.FC = () =>{
     },[selectedRowKeys])
 
     
-
     
     return (
         <>
             <div>
-                {/* <input value={meterQuery} onChange={handleChange} /> */}
-                <Input placeholder="meterno" onChange={handleChange} style={{width: 150, margin: 10}}/>
-                <Button type='default' >Query</Button>
-                <Button type='primary'onClick={()=>setIsModalOpen(true)}>Add</Button>
+                {/* <input value={meterQuery} onChange={handleChange} style={{borderRadius:5, height: 30}}/> */}
+                <Input value={meterQuery} placeholder='meterno' onChange={handleChange} style={{width: 150, margin: 10}}/>
+                <Button type='default' onClick={handleQuery}>Query</Button>
+                <Button type='primary'onClick={handleAddMeter}>Add</Button>
                 <Button type='primary' danger disabled={isDisable} onClick={handleBatchDelete}>Batch delete</Button>
             </div>
             <Table
@@ -164,7 +203,7 @@ const meterInfo: React.FC = () =>{
                 rowKey={(record)=>record.meterno} 
             >
             </Table>
-            <Modal title="Add Meter" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
+            <Modal title={modelTitle} open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
                 <Form
                     name="basic"
                     labelCol={{ span: 6 }}
