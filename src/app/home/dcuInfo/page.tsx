@@ -12,6 +12,7 @@ import {useState, useEffect, useRef} from 'react'
 import {Table, Tag, Space, Input, Button, Modal, Form} from "antd";
 import type {ColumnsType} from 'antd/es/table';
 import * as dayjs from 'dayjs';
+import WModal from '@/app/components/WModal';
 
 interface DcuType {
     dcuno: string,
@@ -166,7 +167,9 @@ const dcuInfo: React.FC = () =>{
                 pagination={pagination}
             >
             </Table>
-            <Modal title="Add Meter" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
+
+
+            {/* <Modal title="Add Meter" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
                 <Form
                     name="basic"
                     labelCol={{ span: 6 }}
@@ -198,7 +201,7 @@ const dcuInfo: React.FC = () =>{
                         <Input />
                     </Form.Item>
                 </Form>
-            </Modal>
+            </Modal> */}
                 
         </>
     )
