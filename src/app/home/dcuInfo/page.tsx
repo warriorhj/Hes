@@ -4,7 +4,7 @@
  * @Author: Hao
  * @Date: 2023-07-14 13:43:11
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-15 18:54:15
+ * @LastEditTime: 2023-07-16 18:32:57
  * @FilePath: \Hes\src\app\home\dcuInfo\page.tsx
  */
 'use client'
@@ -143,7 +143,7 @@ const dcuInfo = () => {
 
     // 333 删除dcu按钮
     const handleDeleteDcu = (record: DcuType) => {
-        console.log(record)
+        // console.log(record)
         // 调用删除接口
     }
  
@@ -191,14 +191,14 @@ const dcuInfo = () => {
     // 后端请求接口
     useEffect(()=>{
         fetchData()
-        console.log(tableRef.current)
+        // console.log(tableRef.current)
         setIsDisabled(selectedRowKeys.length ? false : true)
 
     },[selectedRowKeys])
     
     // 获取数据 同时更新table
     const fetchData = () => {
-        console.log('获取数据')
+        // console.log('获取数据')
     }
 
 

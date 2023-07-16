@@ -4,7 +4,7 @@
  * @Author: Hao
  * @Date: 2023-07-15 13:58:11
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-15 19:13:15
+ * @LastEditTime: 2023-07-16 18:31:26
  * @FilePath: \Hes\src\app\components\WModal.tsx
  */
 // 封装model对话框: 根据传入的props可以渲染不同的modal，如表单，文字提示
@@ -28,7 +28,7 @@ const WModal = (props: ModelProps) =>{
     const [ModalForm] = Form.useForm();
 
     useEffect(() => {
-        console.log('initvalue', initvalue, props)
+        // console.log('initvalue', initvalue, props)
         if(typeof initvalue !== 'undefined' && initvalue !== null){
             ModalForm.setFieldsValue(initvalue);
         }
