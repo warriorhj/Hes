@@ -4,7 +4,7 @@
  * @Author: Hao
  * @Date: 2023-07-14 13:42:53
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-15 17:43:17
+ * @LastEditTime: 2023-07-15 19:17:24
  * @FilePath: \Hes\src\app\home\meterInfo\page.tsx
  */
 'use client'
@@ -63,11 +63,6 @@ const readMeterDataOptions: Option[] = [
       ],
     },
   ];
-
-
-// const dataSource: MeterType[] = ;
-
-
 
 // meter add 和 change 表单数据
 const MeterProps = {
@@ -244,7 +239,7 @@ const meterInfo: React.FC = () =>{
             render: (_, record) => (
             <Space size="middle">
                 <Button type='link' onClick={() => handleChangeMeter(record)}>Change</Button>
-                <Button type='link' onClick={() => handleDeleteMeter(record)}>Delete</Button>
+                <Button type='link' danger onClick={() => handleDeleteMeter(record)}>Delete</Button>
                 <Button type='link' onClick={() => handleReadDataMeter(record)}>ReadData</Button>
                 <Button type='link' onClick={() => handleSendTokenMeter(record)}>SendToken</Button>
                 <Button type='link' onClick={() => handleActionMeter(record)}>Action</Button>
@@ -274,16 +269,23 @@ const meterInfo: React.FC = () =>{
     const handleBatchDelete = () =>{
         console.log('批量删除ID', selectedRowKeys);
     }
+    // 单个删除meter
+    const handleDeleteMeter = (recode: MeterType) =>{
+        console.log('删除ID', recode);
+    }
 
     // 222 table中columns的change操作
     const handleChangeMeter = (value: any) =>{
         console.log('修改ID', value);
         setIsModalOpen(true)
-        const tempProps = Object.assign({}, MeterProps, {handleOk: ()=>{
+        const tempProps = Object.assign({}, MeterProps, {
+            handleOk: ()=>{
             // 修改meter接口
             setIsModalOpen(false)
-        },
-        initvalue: value,})
+            },
+            initvalue: value,
+        })
+        tempProps.title = 'Change Meter'
         setModalProps(tempProps)
         form.setFieldsValue(value)
         
@@ -330,9 +332,7 @@ const meterInfo: React.FC = () =>{
         setModalProps(tempProps)
     }
 
-
-
-
+    // 配置table的选择项
     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
         console.log('selectedRowKeys changed: ', newSelectedRowKeys);
         setSelectedRowKeys(newSelectedRowKeys);
@@ -343,30 +343,11 @@ const meterInfo: React.FC = () =>{
         onChange: onSelectChange,
     }
 
-    // Table中的操作框
-    const [isReadModalOpen, setIsReadModalOpen] = useState(false);
-
-
-    // 两个合并在一起
-    // 批量删除meter
-    
-    // 删除单个meter
-    const handleDeleteMeter = (recode: MeterType) =>{
-        console.log('删除ID', recode);
-    }
-
-    const inputRef = createRef();
-    const [modelTitle, setModelTitle] = useState('');
-
-    
-
    
+    
 
-    // table中每行readdata操作
-    const handleReadDataTypeChange = (value: string) =>{
-        console.log('readdata', value)
-    }
 
+    // 批量删除按钮禁用
     useEffect(() => {
 
         setIsDisabled(selectedRowKeys.length ? false : true)
@@ -374,26 +355,6 @@ const meterInfo: React.FC = () =>{
     },[selectedRowKeys])
 
 
-
-    // 对话框操作部分
-    const handleOk = () => {
-        // 获取form表单中的数据 对象类型
-        setIsModalOpen(false);
-        // let formValue = form.getFieldsValue();
-        // formValue.builddata = new Date();
-        // let tempState = Object.assign([], dataSource)
-        // tempState.push(formValue)
-        // console.log(tempState)
-        // setDataSource(tempState)
-        // form.resetFields()
-        
-        
-    };
-
-    const handleCancel = () => {
-        setIsModalOpen(false);
-    };
-    
     
     return (
         <>
@@ -419,123 +380,7 @@ const meterInfo: React.FC = () =>{
                 handleCancel={()=>{setIsModalOpen(false)}}
                 propValue={modalProps}
                 >
-            </WModal>
-
-
-
-            {/* 添加和修改对话框 */}
-            {/* <Modal title={modelTitle} open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
-                <Form
-                    name="basic"
-                    labelCol={{ span: 6 }}
-                    wrapperCol={{ span: 16 }}
-                    style={{ maxWidth: 600 , textAlign: 'center' }}
-                    autoComplete="off"
-                    labelAlign='left'
-                    form={form}
-                >
-                    <Form.Item
-                        label="meterno"
-                        name="meterno"
-                        rules={[{ required: true, message: 'Please input meterno!' }]}
-                        >
-                        <Input />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="metermodel"
-                        name="metermodel"
-                        >
-                        <Input />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="manufacturer"
-                        name="manufacturer"
-                        >
-                        <Input />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="orgcode"
-                        name="orgcode"
-                        >
-                        <Input />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="ctratio"
-                        name="ctratio"
-                        >
-                        <Input />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="ptratio"
-                        name="ptratio"
-                        >
-                        <Input />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="protocol"
-                        name="protocol"
-                        >
-                        <Input />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="metertype"
-                        name="metertype"
-                        rules={[{ required: true, message: 'Please input metertype!' }]}
-                        >
-                        <Input />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="metermode"
-                        name="metermode"
-                        rules={[{ required: true, message: 'Please input metermode!' }]}
-                        >
-                        <Input />
-                    </Form.Item>
-                </Form>
-            </Modal> */}
-
-            
-            {/* 读取数据对话框 */}
-
-            {/* <Modal 
-                title='ReadData'
-                open={isReadModalOpen}
-                >
-                <Form
-                    name="basic"
-                    labelCol={{ span: 6 }}
-                    wrapperCol={{ span: 16 }}
-                    style={{ maxWidth: 600 , textAlign: 'center' }}
-                    autoComplete="off"
-                    labelAlign='left'
-                    form={form}
-                >
-                    <Form.Item
-                        label="meterno"
-                        name="meterno"
-                        rules={[{ required: true}]}
-                    >
-                        <Input />
-                    </Form.Item>
-                    <Form.Item
-                        label="Cim"
-                        name="Cim"
-                    >
-                        <Cascader options={readMeterDataOptions} onChange={handleReadDataTypeChange} placeholder="Please select" />
-                    </Form.Item>
-
-
-                </Form>
-            </Modal> */}
-                
+            </WModal>                
         </>
     )
 }
