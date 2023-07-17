@@ -4,12 +4,12 @@
  * @Author: Hao
  * @Date: 2023-07-14 13:43:11
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-16 18:32:57
+ * @LastEditTime: 2023-07-18 00:37:58
  * @FilePath: \Hes\src\app\home\dcuInfo\page.tsx
  */
 'use client'
 import {useState, useEffect, useRef} from 'react'
-import {Table, Tag, Space, Input, Button, Modal, Form} from "antd";
+import {Table, Tag, Space, Input, Button, Modal, Form, Popconfirm} from "antd";
 import type {ColumnsType} from 'antd/es/table';
 import * as dayjs from 'dayjs';
 import WModal from '@/app/components/WModal';
@@ -20,8 +20,6 @@ interface DcuType {
     builddata: Date,
     orgcode: string,
 }
-
-
 
 const DcuProps = {
     title: 'Add Dcu',
@@ -79,14 +77,23 @@ const dcuInfo = () => {
             render: (_, record) => (
             <Space size="middle">
                 <Button type='link' onClick={()=>handleChangeDcu(record)}>Change</Button>
-                <Button type='link' danger onClick={()=>handleDeleteDcu(record)}>Delete</Button>
+                <Popconfirm
+                    title="Delete the Dcu"
+                    description={"Are you sure to delete this dcu:" + record.dcuno}
+                    okText="Confirm"
+                    cancelText="cancel"
+                    onCancel={() => handleDeleteDcu(record)}
+                    onConfirm={() => handleDeleteDcu(record)}
+                  >
+                    <Button type='link' danger>Delete</Button>
+                </Popconfirm>
             </Space>
             ),
         }
     ]
     
     // 查询Input框
-    const [meterQuery, setmeterQuery] = useState('');
+    const [dcuQuery, setdcuQuery] = useState('');
     // 获取antd的form
     const [form] = Form.useForm()
     // 对话框的开关
@@ -113,28 +120,53 @@ const dcuInfo = () => {
         current: 1,
         pageSize: 10
     })
-
+    
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-
-
+    
+    
     const [isDisabled, setIsDisabled] = useState(true)
-
+    
+    const tableRef = useRef()  // 没用上
+    const formRef = useRef()   
+    
     // 111 处理 添加dcu按钮
     const handleAddDcu = () => {
         setIsModalOpen(true);
         const tempProps = Object.assign({}, DcuProps,{
-            handleOk: () => setIsModalOpen(false),
-        })
+            handleOk: async () => {
+                const insertData = formRef.current?.formFields();
+                const result = await fetch('/api/dcu/insertDcu',{
+                method: "POST",
+                body: JSON.stringify(insertData),
+                })
+                // console.log(result)
+                formRef.current?.formResets();
+                setIsModalOpen(false)
+                // 刷新页面数据
+                handleQuery();
+            },})
         setModalProps(tempProps)
-        
     }
 
 
     // 222 处理 修改dcu按钮
-    const handleChangeDcu = (record: DcuType) => {
+    const handleChangeDcu = (record: any) => {
         setIsModalOpen(true);
         let tempProps = Object.assign({}, DcuProps,{
-            handleOk: () => setIsModalOpen(false),
+            handleOk: async () => {
+                const changeData = formRef.current?.formFields();
+                const updateData = Object.assign({},changeData,{id:record._id})
+                const result = await fetch('/api/dcu/updateDcu',{
+                    method: "PUT",
+                    body: JSON.stringify(updateData),
+                }).then(data=>data.json())
+                .then(res=>{
+                    console.log(res)
+                })
+                setIsModalOpen(false);
+                // 刷新页面数据
+                handleQuery();   
+            },
             initvalue: record,
         })
         tempProps.title = 'Change Dcu';
@@ -142,9 +174,29 @@ const dcuInfo = () => {
     }
 
     // 333 删除dcu按钮
-    const handleDeleteDcu = (record: DcuType) => {
+    const handleDeleteDcu = async (record: DcuType) => {
         // console.log(record)
         // 调用删除接口
+        const deletelist = JSON.stringify([record.dcuno]);
+        const result = await fetch(`/api/dcu/deleteDcu/${deletelist}`,{
+            method: "DELETE",
+        }).then(res=>res.json()).then(res=>{
+            console.log(res);
+        })
+        // 刷新页面数据
+        handleQuery();
+    }
+    // 批量删除
+    const handleBatchDelete = async () =>{
+        // console.log('批量删除ID', typeof selectedRowKeys, selectedRowKeys);
+        const deletelist = JSON.stringify(selectedRowKeys);
+        const result = await fetch(`/api/dcu/deleteDcu/${deletelist}`,{
+            method: "DELETE",
+        }).then(res=>res.json()).then(res=>{
+            console.log(res)
+        })
+        // 刷新页面数据
+        handleQuery();
     }
  
     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
@@ -157,13 +209,16 @@ const dcuInfo = () => {
         onChange: onSelectChange,
     }
 
-    const handleQuery = (value: string) => {
-        console.log(value)
+    const handleQuery = async () => {
         // 调用search方法，更新dataSource
-         
+        const result = await fetch(`/api/dcu/getBydcuno?dcuno=${dcuQuery}`)
+        .then(res=>res.json())
+        .then(res=>{
+            setDataSource(res.res)
+        })
+        setdcuQuery('');
     }
 
-    const tableRef = useRef()
 
     // 添加确认
     const handleOk = () => {
@@ -190,25 +245,22 @@ const dcuInfo = () => {
 
     // 后端请求接口
     useEffect(()=>{
-        fetchData()
-        // console.log(tableRef.current)
-        setIsDisabled(selectedRowKeys.length ? false : true)
-
+        // 刷新页面数据
+        handleQuery();
+        setIsDisabled(selectedRowKeys.length >=2 ? false : true)
     },[selectedRowKeys])
     
     // 获取数据 同时更新table
-    const fetchData = () => {
-        // console.log('获取数据')
-    }
+    
 
 
     return (
         <>
             <div>
-                <Input placeholder="dcuno" onChange={handleChange} style={{width: 150, margin: 10}}/>
+                <Input value={dcuQuery} placeholder="dcuno" onChange={(e)=>setdcuQuery(e.target.value)} style={{width: 150, margin: 10}}/>
                 <Button type='default' onClick={handleQuery}>Query</Button>
                 <Button type='primary'onClick={handleAddDcu}>Add</Button>
-                <Button type='primary' danger disabled={isDisabled}>Batch delete</Button>
+                <Button type='primary' danger disabled={isDisabled} onClick={handleBatchDelete}>Batch delete</Button>
             </div>
             <Table
                 ref={tableRef}
@@ -221,6 +273,7 @@ const dcuInfo = () => {
             </Table>
 
             <WModal
+                ref={formRef}
                 open={isModalOpen}
                 handleCancel={() => setIsModalOpen(false)}
                 propValue={modalProps}

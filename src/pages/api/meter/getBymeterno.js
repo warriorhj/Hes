@@ -12,7 +12,7 @@ import Meter from '../../../../models/Meter'
 import * as dayjs from 'dayjs';
 
 const handler = async (req, res) => {
-    console.log(typeof req.query, req.query)
+    // console.log(typeof req.query, req.query)
     const query = req.query.meterno ? req.query : null;
     const meterget = await Meter.find(query)
     res.status(200).send({res:meterget})

@@ -4,8 +4,8 @@
  * @Author: Hao
  * @Date: 2023-07-14 13:42:53
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-17 16:57:45
- * @FilePath: \hes\src\app\home\meterInfo\page.tsx
+ * @LastEditTime: 2023-07-18 00:29:27
+ * @FilePath: \Hes\src\app\home\meterInfo\page.tsx
  */
 'use client'
 import {useState, useEffect, useRef} from 'react'
@@ -174,22 +174,7 @@ const meterInfo: React.FC = () =>{
     // 获取antd的form
     const [form] = Form.useForm()
 
-    const [dataSource, setDataSource] = useState([
-        {
-            meterno: "1111015600",
-            protocol: 3,
-            builddata: new Date(2006,0,12,22,19,35),
-            metertype: 4,
-            metermode: 2
-        },
-        {
-            meterno: "11110156001",
-            protocol: 3,
-            builddata: new Date(2007,0,12,22,19,35),
-            metertype: 4,
-            metermode: 2
-        }
-      ])
+    const [dataSource, setDataSource] = useState()
 
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
@@ -253,7 +238,6 @@ const meterInfo: React.FC = () =>{
                     description={"Are you sure to delete this meter:" + record.meterno}
                     okText="Confirm"
                     cancelText="cancel"
-                    onCancel={() => handleDeleteMeter(record)}
                     onConfirm={() => handleDeleteMeter(record)}
                 >
                     <Button type='link' danger>Delete</Button>
@@ -278,6 +262,8 @@ const meterInfo: React.FC = () =>{
             // 重置表单
             formRef.current?.formResets();
             setIsModalOpen(false)
+            // 刷新页面数据
+            handleQuery();
         },})
         setModalProps(tempProps)
     }
@@ -298,19 +284,30 @@ const meterInfo: React.FC = () =>{
     }
     
     // 批量删除meter
-    const handleBatchDelete = () =>{
-        console.log('批量删除ID', selectedRowKeys);
+    const handleBatchDelete = async () =>{
+        console.log('批量删除ID', typeof selectedRowKeys, selectedRowKeys);
+        const deletelist = JSON.stringify(selectedRowKeys);
+        const result = await fetch(`/api/meter/deleteMeter/${deletelist}`,{
+            method: "DELETE",
+        }).then(res=>res.json()).then(res=>{
+            console.log(res)
+        })
+        // 刷新页面数据
+        handleQuery();
     }
     // 单个删除meter
     const handleDeleteMeter = async (recode: MeterType) =>{
         console.log('删除ID', recode);
-        const result = await fetch(`/api/meter/deleteMeter/${recode.meterno}`,{
+        // let deletelist = [recode.meterno];
+        const deletelist = JSON.stringify([recode.meterno]);
+        const result = await fetch(`/api/meter/deleteMeter/${deletelist}`,{
             method: "DELETE",
         }).then(res=>res.json()).then(res=>{
 
         })
         console.log(result)
-        // 
+        // 刷新页面数据
+        handleQuery(); 
     }
 
     // 222 table中columns的change操作
@@ -332,6 +329,8 @@ const meterInfo: React.FC = () =>{
                 console.log(res)
             })
             setIsModalOpen(false)
+            // 刷新页面数据
+            handleQuery();
             },
             initvalue: value,
         })
@@ -400,8 +399,7 @@ const meterInfo: React.FC = () =>{
     // 批量删除按钮禁用
     useEffect(() => {
 
-        
-
+        handleQuery();
         setIsDisabled(selectedRowKeys.length >= 2 ? false : true)
 
     },[selectedRowKeys])
