@@ -4,15 +4,17 @@
  * @Author: Hao
  * @Date: 2023-07-14 13:42:53
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-15 19:17:24
- * @FilePath: \Hes\src\app\home\meterInfo\page.tsx
+ * @LastEditTime: 2023-07-17 16:57:45
+ * @FilePath: \hes\src\app\home\meterInfo\page.tsx
  */
 'use client'
-import {useState, useEffect, useRef, createRef} from 'react'
-import {Table, Tag, Space, Input, Button, Modal, Form, Cascader} from "antd";
+import {useState, useEffect, useRef} from 'react'
+import {Table, Tag, Space, Input, Button, Modal, Form, Cascader, Popconfirm} from "antd";
 import type {ColumnsType} from 'antd/es/table';
 import * as dayjs from 'dayjs';
 import WModal from '@/app/components/WModal';
+import { set } from 'mongoose';
+import { cachedDataVersionTag } from 'v8';
 
 interface MeterType {
     meterno: string,
@@ -193,6 +195,9 @@ const meterInfo: React.FC = () =>{
 
     const [isDisable, setIsDisabled] = useState(true)
 
+    // wModal中的ref
+    const formRef = useRef()
+
 
     // Table中的columns
     // table渲染的列
@@ -239,10 +244,20 @@ const meterInfo: React.FC = () =>{
             render: (_, record) => (
             <Space size="middle">
                 <Button type='link' onClick={() => handleChangeMeter(record)}>Change</Button>
-                <Button type='link' danger onClick={() => handleDeleteMeter(record)}>Delete</Button>
+                {/* <Button type='link' danger onClick={() => handleDeleteMeter(record)}>Delete</Button> */}
                 <Button type='link' onClick={() => handleReadDataMeter(record)}>ReadData</Button>
                 <Button type='link' onClick={() => handleSendTokenMeter(record)}>SendToken</Button>
                 <Button type='link' onClick={() => handleActionMeter(record)}>Action</Button>
+                <Popconfirm
+                    title="Delete the Meter"
+                    description={"Are you sure to delete this meter:" + record.meterno}
+                    okText="Confirm"
+                    cancelText="cancel"
+                    onCancel={() => handleDeleteMeter(record)}
+                    onConfirm={() => handleDeleteMeter(record)}
+                >
+                    <Button type='link' danger>Delete</Button>
+                </Popconfirm>
             </Space>
             ),
         }
@@ -251,16 +266,33 @@ const meterInfo: React.FC = () =>{
     // 111 顶部table操作部分  添加meter按钮
     const handleAddMeter = () =>{
         setIsModalOpen(true)
-        const tempProps = Object.assign({}, MeterProps, {handleOk: ()=>{
+        
+        const tempProps = Object.assign({}, MeterProps, {handleOk: async ()=>{
             // 添加meter接口
+            const insertData = formRef.current?.formFields();
+            const result = await fetch('/api/meter/insertMeter',{
+                method: "POST",
+                body: JSON.stringify(insertData),
+            })
+            console.log(result)
+            // 重置表单
+            formRef.current?.formResets();
             setIsModalOpen(false)
         },})
         setModalProps(tempProps)
     }
 
     // 顶部query按钮 
-    const handleQuery = () =>{
+    const handleQuery = async () =>{
         // 请求
+        const result = await fetch(`/api/meter/getBymeterno?meterno=${meterQuery}`).then(res=>{
+            return res.json()
+        }).then(res=>{
+            // console.log('res', res)
+            setDataSource(res.res)
+            // console.log('res', typeof res,JSON.parse(res))
+        });
+        // console.log('result', result?.res)
         setmeterQuery('')
         // 查询接口
     }
@@ -270,8 +302,15 @@ const meterInfo: React.FC = () =>{
         console.log('批量删除ID', selectedRowKeys);
     }
     // 单个删除meter
-    const handleDeleteMeter = (recode: MeterType) =>{
+    const handleDeleteMeter = async (recode: MeterType) =>{
         console.log('删除ID', recode);
+        const result = await fetch(`/api/meter/deleteMeter/${recode.meterno}`,{
+            method: "DELETE",
+        }).then(res=>res.json()).then(res=>{
+
+        })
+        console.log(result)
+        // 
     }
 
     // 222 table中columns的change操作
@@ -279,8 +318,19 @@ const meterInfo: React.FC = () =>{
         console.log('修改ID', value);
         setIsModalOpen(true)
         const tempProps = Object.assign({}, MeterProps, {
-            handleOk: ()=>{
+            handleOk: async ()=>{
             // 修改meter接口
+            // 获取form表单
+            const changeData = formRef.current?.formFields();
+            const updateData = Object.assign({},changeData,{id:value._id})
+            console.log('changeData', typeof updateData, updateData);
+            const result = await fetch('/api/meter/updateMeter',{
+                method: "PUT",
+                body: JSON.stringify(updateData),
+            }).then(data=>data.json())
+            .then(res=>{
+                console.log(res)
+            })
             setIsModalOpen(false)
             },
             initvalue: value,
@@ -350,7 +400,9 @@ const meterInfo: React.FC = () =>{
     // 批量删除按钮禁用
     useEffect(() => {
 
-        setIsDisabled(selectedRowKeys.length ? false : true)
+        
+
+        setIsDisabled(selectedRowKeys.length >= 2 ? false : true)
 
     },[selectedRowKeys])
 
@@ -376,6 +428,7 @@ const meterInfo: React.FC = () =>{
 
             {/* 公用对话框 */}
             <WModal
+                ref={formRef}
                 open={isModalOpen}
                 handleCancel={()=>{setIsModalOpen(false)}}
                 propValue={modalProps}

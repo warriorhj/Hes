@@ -7,7 +7,7 @@
  * @LastEditTime: 2023-07-16 22:34:09
  * @FilePath: \Hes\middleware\mongodb.js
  */
-
+// 数据库连接层
 import mongoose from 'mongoose';
 
 const connectDB = handler => async (req, res) => {

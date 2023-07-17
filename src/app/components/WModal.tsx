@@ -4,12 +4,12 @@
  * @Author: Hao
  * @Date: 2023-07-15 13:58:11
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-16 18:31:26
- * @FilePath: \Hes\src\app\components\WModal.tsx
+ * @LastEditTime: 2023-07-17 14:29:49
+ * @FilePath: \hes\src\app\components\WModal.tsx
  */
 // 封装model对话框: 根据传入的props可以渲染不同的modal，如表单，文字提示
 'use client'
-import React, { use, useState, useEffect } from 'react';
+import React, { useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { Modal, Button, Form, Input, Cascader} from 'antd';
 
 interface ModelProps {
@@ -21,11 +21,12 @@ interface ModelProps {
     cancelText?: string;
 }
 
-const WModal = (props: ModelProps) =>{
+const WModal = (props: ModelProps, ref) =>{
 
     const {open, propValue, handleCancel} = props;
     const {title, handleOk, content, initvalue, okText, cancelText} = propValue;
     const [ModalForm] = Form.useForm();
+    const formRef = useRef();
 
     useEffect(() => {
         // console.log('initvalue', initvalue, props)
@@ -87,6 +88,13 @@ const WModal = (props: ModelProps) =>{
     
     }
 
+    useImperativeHandle(ref, () => {
+        return {
+            formFields: ModalForm.getFieldsValue,
+            formResets: ModalForm.resetFields
+        }
+    })
+
     return (
             <Modal
             open={open}
@@ -102,4 +110,4 @@ const WModal = (props: ModelProps) =>{
 
 }
 
-export default WModal;
+export default forwardRef(WModal);
