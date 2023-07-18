@@ -4,8 +4,8 @@
  * @Author: Hao
  * @Date: 2023-07-14 13:42:53
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-18 00:29:27
- * @FilePath: \Hes\src\app\home\meterInfo\page.tsx
+ * @LastEditTime: 2023-07-18 17:49:19
+ * @FilePath: \hes\src\app\home\meterInfo\page.tsx
  */
 'use client'
 import {useState, useEffect, useRef} from 'react'
@@ -13,8 +13,6 @@ import {Table, Tag, Space, Input, Button, Modal, Form, Cascader, Popconfirm} fro
 import type {ColumnsType} from 'antd/es/table';
 import * as dayjs from 'dayjs';
 import WModal from '@/app/components/WModal';
-import { set } from 'mongoose';
-import { cachedDataVersionTag } from 'v8';
 
 interface MeterType {
     meterno: string,
@@ -30,41 +28,91 @@ interface Option {
     children?: Option[];
 }
 
+const readMeterDataOptions:Option[] = [
+    {
+        value: "Instantaneous voltage L1",
+        label: "Instantaneous voltage L1"
+    },{
+        value: "Instantaneous current L1",
+        label: "Instantaneous current L1"
+    },{
+        value: "Instantaneous current L2",
+        label: "Instantaneous current L2"
+    },
+    {
+        value: "Instantaneous active power import L1",
+        label: "Instantaneous active power import L1"
+    },
+    {
+        value: "Instantaneous active power export L2",
+        label: "Instantaneous active power export L2"
+    },
+    {
+        value: "Over Active Power threshold",
+        label: "Over Active Power threshold"
+    },
+    {
+        value: "Active accumulative energy import",
+        label: "Active accumulative energy import"
+    },
+    {
+        value: "Active accumulative energy export",
+        label: "Active accumulative energy export"
+    },
+    {
+        value: "prepay-current balance",
+        label: "prepay-current balance"
+    },
+    {
+        value: "remote_disconnet(data)",
+        label: "remote_disconnet(data)"
+    },{
+        value: "remote_reconnet(data)",
+        label: "remote_reconnet(data)"
+    },{
+        value: "Token gateway enter token",
+        label: "Token gateway enter token"
+    }
+]
+    
 
-const readMeterDataOptions: Option[] = [
-    {
-      value: 'InstantaneousValue',
-      label: 'InstantaneousValue',
-      children: [
-        {
-          value: 'A phase voltage',
-          label: 'A phase voltage',
-        },
-        {
-          value: 'A phase current',
-          label: 'A phase current',
-        },
-        {
-          value: 'A phase power factor',
-          label: 'A phase power factor',
-        }
-      ],
-    },
-    {
-      value: 'Energy',
-      label: 'Energy',
-      children: [
-        {
-          value: 'Active energy (|+A|-|-A|) Net total',
-          label: 'Active energy (|+A|-|-A|) Net total',
-        },
-        {
-           value: 'Active energy (|+A|-|-A|) Net tariff1',
-           label: 'Active energy (|+A|-|-A|) Net tariff1',
-        }
-      ],
-    },
-  ];
+
+
+
+// const readMeterDataOptions: Option[] = [
+//     {
+//       value: 'InstantaneousValue',
+//       label: 'InstantaneousValue',
+//       children: [
+//         {
+//           value: 'A phase voltage',
+//           label: 'A phase voltage',
+//         },
+//         {
+//           value: 'A phase current',
+//           label: 'A phase current',
+//         },
+//         {
+//           value: 'A phase power factor',
+//           label: 'A phase power factor',
+//         }
+//       ],
+//     },
+//     {
+//       value: 'Energy',
+//       label: 'Energy',
+//       children: [
+//         {
+//           value: 'Active energy (|+A|-|-A|) Net total',
+//           label: 'Active energy (|+A|-|-A|) Net total',
+//         },
+//         {
+//            value: 'Active energy (|+A|-|-A|) Net tariff1',
+//            label: 'Active energy (|+A|-|-A|) Net tariff1',
+//         }
+//       ],
+//     },
+//   ];
 
 // meter add 和 change 表单数据
 const MeterProps = {
@@ -343,10 +391,24 @@ const meterInfo: React.FC = () =>{
      // table中的读取数据按钮
      const handleReadDataMeter = (value: any) =>{
         // 打开对话框，设置form的值
+
+        
+        
         setIsModalOpen(true)
-        const tempProps = Object.assign({}, ReadDataProps, {handleOk: ()=>{
+        const tempProps = Object.assign({}, ReadDataProps, {handleOk: async ()=>{
             // 读取数据接口
             setIsModalOpen(false)
+            const formData = formRef.current?.formFields();
+            const readItem = formData.Cim[0];
+            // 获取选择读取的数据
+            console.log(readItem)
+            const result = await fetch(`/api/meter/readData?readItem=${readItem}`)
+                .then(res=>res.json())
+                .then(res=>{
+                    console.log(res)
+                })
+
+            
         },
         initvalue: value,})
         setModalProps(tempProps)
@@ -400,7 +462,9 @@ const meterInfo: React.FC = () =>{
     useEffect(() => {
 
         handleQuery();
-        setIsDisabled(selectedRowKeys.length >= 2 ? false : true)
+        setIsDisabled(selectedRowKeys.length >= 2 ? false : true);
+
+        
 
     },[selectedRowKeys])
 

@@ -4,8 +4,8 @@
  * @Author: Hao
  * @Date: 2023-07-14 13:43:11
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-18 00:37:58
- * @FilePath: \Hes\src\app\home\dcuInfo\page.tsx
+ * @LastEditTime: 2023-07-18 09:11:34
+ * @FilePath: \hes\src\app\home\dcuInfo\page.tsx
  */
 'use client'
 import {useState, useEffect, useRef} from 'react'
@@ -51,29 +51,34 @@ const dcuInfo = () => {
             title: 'dcuno',
             dataIndex: 'dcuno',
             key: 'dcuno',
+            align: 'center',
         },
         {
             title: 'protocol',
             dataIndex: 'protocol',
             key: 'protocol',
+            align: 'center',
             render: (val) => <Tag>{val || '-'}</Tag>
         },
         {
             title: 'builddata',
             dataIndex: 'builddata',
             key: 'builddata',
+            align: 'center',
             render: (val) => dayjs(val).format("YYYY-MM-DD HH:mm:ss")
         },
         {
             title: 'orgcode',
             key: 'orgcode',
             dataIndex: 'orgcode',
+            align: 'center',
             render: (val) => <Tag>{val || '-'}</Tag>
         },
         {
             title: 'Operation',
             key: 'action',
             dataIndex: 'action',
+            align: 'center',
             render: (_, record) => (
             <Space size="middle">
                 <Button type='link' onClick={()=>handleChangeDcu(record)}>Change</Button>
