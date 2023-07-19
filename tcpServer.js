@@ -4,19 +4,20 @@
  * @Author: Hao
  * @Date: 2023-07-18 16:16:26
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-19 10:07:26
+ * @LastEditTime: 2023-07-19 13:25:57
  * @FilePath: \hes\tcpServer.js
  */
 const net = require('net');
-let clientSocket;
+const tcpManager = require('./tcp_manage')
+
 const tcpserver = net.createServer(function(socket){
     console.log('Client Conneted');
     var address=tcpserver.address();
     var message='client,the server address is'+JSON.stringify(address);
 
-    clientSocket = socket;
 
-    //发送数据
+    tcpManager.addSocket(socket)
+
     socket.write(message,function(){
         
         var writeSize=socket.bytesWritten;
@@ -35,9 +36,6 @@ const tcpserver = net.createServer(function(socket){
     })
 })
 
-module.exports = {
-    tcpserver: () => {return tcpserver},
-    getclientSocket: () => {
-        console.log("getclientSocket",clientSocket)
-        return clientSocket}
-};
+tcpserver.listen(18001,()=>{
+    console.log("tcp server listening at port 18001")
+})

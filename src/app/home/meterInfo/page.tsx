@@ -4,7 +4,7 @@
  * @Author: Hao
  * @Date: 2023-07-14 13:42:53
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-19 10:22:45
+ * @LastEditTime: 2023-07-19 13:30:48
  * @FilePath: \hes\src\app\home\meterInfo\page.tsx
  */
 'use client'
@@ -318,18 +318,17 @@ const meterInfo: React.FC = () =>{
 
     // 顶部query按钮 
     const handleQuery = async () =>{
-
-        const result = {res:[{"_id":"64b4ecf76e13592e9afc25bc","meterno":"warrior3","metermodel":"112134234","manufacturer":"21","orgcode":"423","ctratio":"ew2","ptratio":"ew31","builddata":"2023-07-17T07:25:43.781Z","metertype":"3","metermode":"f2","__v":0,"protocol":"1213123123"},{"_id":"64b4fb676e13592e9afc25fa","meterno":"warrior123","metermodel":"312","manufacturer":"123","orgcode":"132","ctratio":"231","ptratio":"231","protocol":"3","builddata":"2023-07-17T08:27:19.297Z","metertype":"3","metermode":"2","__v":0}]}
-        setDataSource(result.res)
-        // 请求
-        // const result = await fetch(`/api/meter/getBymeterno?meterno=${meterQuery}`).then(res=>{
-        //     return res.json()
-        // }).then(res=>{
-        //     // console.log('res', res)
-        //     setDataSource(res.res)
-        //     // console.log('res', typeof res,JSON.parse(res))
-        // });
-        // console.log('result', result?.res)
+        // 静态数据
+        // const result = {res:[{"_id":"64b4ecf76e13592e9afc25bc","meterno":"warrior3","metermodel":"112134234","manufacturer":"21","orgcode":"423","ctratio":"ew2","ptratio":"ew31","builddata":"2023-07-17T07:25:43.781Z","metertype":"3","metermode":"f2","__v":0,"protocol":"1213123123"},{"_id":"64b4fb676e13592e9afc25fa","meterno":"warrior123","metermodel":"312","manufacturer":"123","orgcode":"132","ctratio":"231","ptratio":"231","protocol":"3","builddata":"2023-07-17T08:27:19.297Z","metertype":"3","metermode":"2","__v":0}]}
+        // setDataSource(result.res)
+        
+        const result = await fetch(`/api/meter/getBymeterno?meterno=${meterQuery}`).then(res=>{
+            return res.json()
+        }).then(res=>{
+            // console.log('res', res)
+            setDataSource(res.res)
+            // console.log('res', typeof res,JSON.parse(res))
+        });
         setmeterQuery('')
         // 查询接口
     }
@@ -405,7 +404,7 @@ const meterInfo: React.FC = () =>{
             const readItem = formData.Cim[0];
             // 获取选择读取的数据
             console.log(readItem)
-            const result = await fetch(`/api/meter/readData?readItem=${readItem}`)
+            const result = await fetch(`/api/readdata?readItem=${readItem}`)
                 .then(res=>res.json())
                 .then(res=>{
                     console.log(res)
@@ -463,7 +462,6 @@ const meterInfo: React.FC = () =>{
 
     // 批量删除按钮禁用
     useEffect(() => {
-
         handleQuery();
         setIsDisabled(selectedRowKeys.length >= 2 ? false : true);
 
