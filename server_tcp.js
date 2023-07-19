@@ -4,32 +4,19 @@
  * @Author: Hao
  * @Date: 2023-07-18 12:15:57
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-18 16:25:40
- * @FilePath: \hes\server_tcp.js
+ * @LastEditTime: 2023-07-19 10:13:43
+ * @FilePath: \Hes\server_tcp.js
  */
 
-//引入net模块
-
-const tcpServer = require('./tcpServer.js')
 const express = require("express");
 const next = require("next");
-
+// 
 const httpserver = express();
 const port = parseInt(process.env.PORT, 10) || 8083;
 const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev, });
 const handle = app.getRequestHandler();
 httpserver.set("x-powered-by", dev);
-
-tcpServer.on('connection', (socket) => {
-  console.log('A new client connected to the TCP server!');
-});
-
-
-// tcpServer.listen(18001,()=>{
-//     console.log("tcp server listening at port 18001")
-// })
-
 
 
 app

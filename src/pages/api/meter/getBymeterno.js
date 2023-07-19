@@ -4,13 +4,12 @@
  * @Author: Hao
  * @Date: 2023-07-17 11:05:13
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-18 17:47:29
- * @FilePath: \hes\src\pages\api\meter\getBymeterno.js
+ * @LastEditTime: 2023-07-19 10:02:49
+ * @FilePath: \Hes\src\pages\api\meter\getBymeterno.js
  */
 import connectDB from '../../../../middleware/mongodb'
 import Meter from '../../../../models/Meter'
 import * as dayjs from 'dayjs';
-import tcpserver from '../../../../tcpServer';
 
 const handler = async (req, res) => {
     // console.log(typeof req.query, req.query)
