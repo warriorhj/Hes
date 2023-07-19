@@ -4,8 +4,8 @@
  * @Author: Hao
  * @Date: 2023-07-18 12:15:57
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-19 14:35:25
- * @FilePath: \hes\server_tcp.js
+ * @LastEditTime: 2023-07-19 17:10:46
+ * @FilePath: \hes\server.js
  */
 
 //引入net模块
@@ -14,6 +14,7 @@ require('./tcpServer.js')
 const tcpManager = require('./tcp_manage.js')
 const express = require("express");
 const next = require("next");
+const { readDirection } = require('./cont.js');
 
 const httpserver = express();
 const port = parseInt(process.env.PORT, 10) || 8083;
@@ -22,31 +23,41 @@ const app = next({ dev, });
 const handle = app.getRequestHandler();
 httpserver.set("x-powered-by", dev);
 
-// tcpserver().on('connection', (socket) => {
-//   console.log('A new client connected to the TCP server1111!',tcpManager);
-  
-// });
- 
-
-// console.log('getclientSocket',getclientSocket())
+let Seq = 0;
 
 app
   .prepare()
   .then(() => {
     //自定义api
     httpserver.get("/api/readdata", (req, res) => {
-        console.log('readdata',req.query)
 
-        // 处理未连接的情况就发起读数据的请求
+        const { readItem , meterno} = req.query;
 
+        Seq = Seq > 255 ? 0 : Seq + 1;
+
+        const TYPE = '00';
+        const SEQ = Seq.toString(16).padStart(2, '0'); // 固定长度2,前置补0
+        const Addr = null; // meterAddr的值
+
+        const DIRECTION = readDirection[readItem].direction;
+        const LENGTH = DIRECTION.match(/ /g).length + 1;
+
+        const data = [TYPE,SEQ, Addr,LENGTH, DIRECTION].join(' ');
+       
+        // 结合meterno找到对应的socket，对其发送数据
         const socket = tcpManager.getConnectedSockets();
 
-        socket[0].write("test send data");
-        socket[0].on('data',(h)=>{
-           res.json({code:1, data:h.toString()})
-           return
-        })
-        
+        if(!socket.length){
+          // 该客户端没有建立连接，前端进行提示
+          res.json({code:0, data:'no connect'})
+        }else{
+          // 该客户端已经建立连接，发送数据
+          socket[0].write(data);
+          socket[0].on("data", function(data){
+            console.log("接受到数据",data.toString())
+            res.json({code:1, data:data.toString()})
+          })
+        }  
     });
 
     httpserver.get("/api_test", (req, res) => {

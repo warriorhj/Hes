@@ -4,7 +4,7 @@
  * @Author: Hao
  * @Date: 2023-07-18 16:16:26
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-19 13:25:57
+ * @LastEditTime: 2023-07-19 16:25:38
  * @FilePath: \hes\tcpServer.js
  */
 const net = require('net');
@@ -27,6 +27,10 @@ const tcpserver = net.createServer(function(socket){
     });
 
     socket.on("data", function(data){
+        
+        // 当客户端建立连接后，客户端会发送连接成功指令，其中包含了meterInfo和dcuInfo的信息
+        // 最好此时通过meterInfo和dcuInfo的信息，将socket和meterInfo和dcuInfo进行绑定
+
         console.log("接受到数据",data.toString())
     })
 

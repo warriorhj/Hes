@@ -4,7 +4,7 @@
  * @Author: Hao
  * @Date: 2023-07-14 13:42:53
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-19 13:30:48
+ * @LastEditTime: 2023-07-19 17:15:37
  * @FilePath: \hes\src\app\home\meterInfo\page.tsx
  */
 'use client'
@@ -394,8 +394,6 @@ const meterInfo: React.FC = () =>{
      const handleReadDataMeter = (value: any) =>{
         // 打开对话框，设置form的值
 
-        
-        
         setIsModalOpen(true)
         const tempProps = Object.assign({}, ReadDataProps, {handleOk: async ()=>{
             // 读取数据接口
@@ -404,13 +402,12 @@ const meterInfo: React.FC = () =>{
             const readItem = formData.Cim[0];
             // 获取选择读取的数据
             console.log(readItem)
-            const result = await fetch(`/api/readdata?readItem=${readItem}`)
+            const result = await fetch(`/api/readdata?readItem=${readItem}&meterno=${value.meterno}`)
                 .then(res=>res.json())
                 .then(res=>{
-                    console.log(res)
+                    console.log(res.data)
                 })
 
-            
         },
         initvalue: value,})
         setModalProps(tempProps)
