@@ -4,25 +4,29 @@
  * @Author: Hao
  * @Date: 2023-07-18 17:37:11
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-19 10:01:30
- * @FilePath: \Hes\src\pages\api\meter\readData.js
+ * @LastEditTime: 2023-07-19 13:15:50
+ * @FilePath: \hes\src\pages\api\meter\readData.js
  */
 
 import connectDB from '../../../../middleware/mongodb'
-import {tcpServer,getClientSocket} from '../../../../tcpServer';
-console.log('aa', JSON.stringify(getClientSocket))
+// import {tcpserver,getclientSocket} from '../../../../tcpServer';
+// const socketManager = require('../../../../tcp_manage.js');
+
 const handler = async (req, res) => {
 
-    console.log("readData", req.query, getClientSocket());
-    
-    // tcpServer().on('connection', (socket) => {
-    //     console.log('A new client connected to the TCP server!');
-    //     socket.write(req.query,function(){
-    //         var writeSize=socket.bytesWritten;
-    //         console.log('the size of message is'+writeSize);
-    //         });
-    //     });
+    console.log("readData", req.query);    
 
+    
+    // 获取已连接的socket
+    // const connectedSockets = socketManager.getConnectedSockets();
+
+    // console.log('connectedSockets',connectedSockets)
+    
+    // // 在这里使用已连接的socket进行操作
+    // connectedSockets.forEach(socket => {
+    // // 处理socket连接
+    //     console.log(socket)
+    // });
     
     return res.status(201).send({ok:"test"});
 }

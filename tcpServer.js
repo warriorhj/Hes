@@ -4,18 +4,20 @@
  * @Author: Hao
  * @Date: 2023-07-18 16:16:26
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-19 10:10:06
+ * @LastEditTime: 2023-07-19 22:54:00
  * @FilePath: \Hes\tcpServer.js
  */
 const net = require('net');
-let clientSocket = [];
+const tcpManager = require('./tcp_manage')
+
 const tcpserver = net.createServer(function(socket){
     console.log('Client Conneted');
-    clientSocket.push(socket);
-    console.log('clientSocket',clientSocket);
     var address=tcpserver.address();
     var message='client,the server address is'+JSON.stringify(address);
-    //发送数据
+
+
+    tcpManager.addSocket(socket)
+
     socket.write(message,function(){
         
         var writeSize=socket.bytesWritten;
@@ -25,36 +27,19 @@ const tcpserver = net.createServer(function(socket){
     });
 
     socket.on("data", function(data){
+        
+        // 当客户端建立连接后，客户端会发送连接成功指令，其中包含了meterInfo和dcuInfo的信息
+        // 最好此时通过meterInfo和dcuInfo的信息，将socket和meterInfo和dcuInfo进行绑定
+
         console.log("接受到数据",data.toString())
     })
+
 
     socket.on("end", function(data){
         console.log("client disconnet");
     })
 })
-tcpserver.listen(18001, 'localhost', () => {
-    console.log('TCP server started on port 18001 in tcpServer.js');
-  });
 
-
-module.exports = {
-    tcpServer: () => {return tcpserver},
-    getClientSocket:() => { return clientSocket}
-    // getClientSocket:(callback)=>{
-    //     if (clientSocket) {
-    //         // 如果存在，立即返回socket对象
-    //         console.log('clientSocket',clientSocket);
-    //         callback(clientSocket)
-    //       } else {
-    //         // 如果不存在，等待服务器启动后再返回socket对象
-    //         tcpserver.on('listening', () => {
-    //             console.log('listening in tcpServer.js', clientSocket);
-    //             callback(clientSocket);
-    //         });
-    //       }
-    // }
-};
-
-
-
-
+tcpserver.listen(18001,()=>{
+    console.log("tcp server listening at port 18001")
+})

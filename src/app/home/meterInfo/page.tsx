@@ -4,15 +4,16 @@
  * @Author: Hao
  * @Date: 2023-07-14 13:42:53
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-18 17:49:19
- * @FilePath: \hes\src\app\home\meterInfo\page.tsx
+ * @LastEditTime: 2023-07-19 23:10:51
+ * @FilePath: \Hes\src\app\home\meterInfo\page.tsx
  */
 'use client'
 import {useState, useEffect, useRef} from 'react'
-import {Table, Tag, Space, Input, Button, Modal, Form, Cascader, Popconfirm} from "antd";
+import {Table, Tag, Space, Input, Button, Modal, Form, Popconfirm, Spin, Alert} from "antd";
 import type {ColumnsType} from 'antd/es/table';
 import * as dayjs from 'dayjs';
 import WModal from '@/app/components/WModal';
+import { set } from 'mongoose';
 
 interface MeterType {
     meterno: string,
@@ -74,45 +75,6 @@ const readMeterDataOptions:Option[] = [
         label: "Token gateway enter token"
     }
 ]
-    
-
-
-
-
-// const readMeterDataOptions: Option[] = [
-//     {
-//       value: 'InstantaneousValue',
-//       label: 'InstantaneousValue',
-//       children: [
-//         {
-//           value: 'A phase voltage',
-//           label: 'A phase voltage',
-//         },
-//         {
-//           value: 'A phase current',
-//           label: 'A phase current',
-//         },
-//         {
-//           value: 'A phase power factor',
-//           label: 'A phase power factor',
-//         }
-//       ],
-//     },
-//     {
-//       value: 'Energy',
-//       label: 'Energy',
-//       children: [
-//         {
-//           value: 'Active energy (|+A|-|-A|) Net total',
-//           label: 'Active energy (|+A|-|-A|) Net total',
-//         },
-//         {
-//            value: 'Active energy (|+A|-|-A|) Net tariff1',
-//            label: 'Active energy (|+A|-|-A|) Net tariff1',
-//         }
-//       ],
-//     },
-//   ];
 
 // meter add 和 change 表单数据
 const MeterProps = {
@@ -228,6 +190,12 @@ const meterInfo: React.FC = () =>{
 
     const [isDisable, setIsDisabled] = useState(true)
 
+    const [isReadDataModalOpen, setIsReadDataModalOpen] = useState(false)
+
+    const [isLoading, setIsLoading] = useState(true)
+
+    const [readValue, setReadValue] = useState(null)
+
     // wModal中的ref
     const formRef = useRef()
 
@@ -318,7 +286,10 @@ const meterInfo: React.FC = () =>{
 
     // 顶部query按钮 
     const handleQuery = async () =>{
-        // 请求
+        // 静态数据
+        // const result = {res:[{"_id":"64b4ecf76e13592e9afc25bc","meterno":"warrior3","metermodel":"112134234","manufacturer":"21","orgcode":"423","ctratio":"ew2","ptratio":"ew31","builddata":"2023-07-17T07:25:43.781Z","metertype":"3","metermode":"f2","__v":0,"protocol":"1213123123"},{"_id":"64b4fb676e13592e9afc25fa","meterno":"warrior123","metermodel":"312","manufacturer":"123","orgcode":"132","ctratio":"231","ptratio":"231","protocol":"3","builddata":"2023-07-17T08:27:19.297Z","metertype":"3","metermode":"2","__v":0}]}
+        // setDataSource(result.res)
+        
         const result = await fetch(`/api/meter/getBymeterno?meterno=${meterQuery}`).then(res=>{
             return res.json()
         }).then(res=>{
@@ -326,7 +297,6 @@ const meterInfo: React.FC = () =>{
             setDataSource(res.res)
             // console.log('res', typeof res,JSON.parse(res))
         });
-        // console.log('result', result?.res)
         setmeterQuery('')
         // 查询接口
     }
@@ -392,23 +362,25 @@ const meterInfo: React.FC = () =>{
      const handleReadDataMeter = (value: any) =>{
         // 打开对话框，设置form的值
 
-        
-        
         setIsModalOpen(true)
         const tempProps = Object.assign({}, ReadDataProps, {handleOk: async ()=>{
             // 读取数据接口
             setIsModalOpen(false)
+            // 打开显示数据框
+            setIsReadDataModalOpen(true)
             const formData = formRef.current?.formFields();
             const readItem = formData.Cim[0];
             // 获取选择读取的数据
-            console.log(readItem)
-            const result = await fetch(`/api/meter/readData?readItem=${readItem}`)
+            // console.log(readItem)
+            const result = await fetch(`/api/readdata?readItem=${readItem}&meterno=${value.meterno}`)
                 .then(res=>res.json())
                 .then(res=>{
-                    console.log(res)
-                })
 
-            
+                    console.log(res.data)
+                    // 关闭数据加载框
+                    setIsLoading(false)
+                    setReadValue(res.data)
+                })
         },
         initvalue: value,})
         setModalProps(tempProps)
@@ -460,7 +432,6 @@ const meterInfo: React.FC = () =>{
 
     // 批量删除按钮禁用
     useEffect(() => {
-
         handleQuery();
         setIsDisabled(selectedRowKeys.length >= 2 ? false : true);
 
@@ -495,7 +466,25 @@ const meterInfo: React.FC = () =>{
                 handleCancel={()=>{setIsModalOpen(false)}}
                 propValue={modalProps}
                 >
-            </WModal>                
+            </WModal> 
+
+            {/* 弹出反馈数据显示框 */}
+            <Modal
+                title="ReadData"
+                open={isReadDataModalOpen}
+                onCancel={()=>{setIsReadDataModalOpen(false);setIsLoading(true);setReadValue(null)}}
+                onOk={()=>{setIsReadDataModalOpen(false);setIsLoading(true);setReadValue(null)}}
+                >
+                <Spin 
+                    tip="Data Connecting"
+                    spinning={isLoading}>
+                    <Alert
+                    message="The value of the data is:"
+                    type="success"
+                        /> 
+                        {readValue}
+                </Spin>
+            </Modal>
         </>
     )
 }
