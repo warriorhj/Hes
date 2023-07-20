@@ -4,7 +4,7 @@
  * @Author: Hao
  * @Date: 2023-07-18 12:15:57
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-20 14:16:20
+ * @LastEditTime: 2023-07-20 15:37:54
  * @FilePath: \hes\server.js
  */
 
@@ -31,19 +31,18 @@ app
     //自定义api 未解决的bug  
     httpserver.get("/api/readdata", (req, res) => {
 
-        console.log(req.query)
-
         const { readItem , meterno} = req.query;
 
-        Seq = Seq > 255 ? 0 : Seq + 1;
+        Seq = Seq > 255 ? 0 : Seq + 1; // 序列号 0-255循环
 
         const TYPE = '00';
         const SEQ = Seq.toString(16).padStart(2, '0'); // 固定长度2,前置补0
         const Addr = null; // meterAddr的值
 
         const DIRECTION = readDirection[readItem].direction;
-        const LENGTH = DIRECTION.match(/ /g).length + 1;
 
+        const LENGTH = (DIRECTION.match(/ /g).length + 1).toString(16).padStart(2,'0'); //指令的长度转十六进制
+        
         const data = [TYPE, SEQ, Addr, LENGTH, DIRECTION].join(' ');
        
         // 结合meterno找到对应的socket，对其发送数据
@@ -55,26 +54,53 @@ app
           // 该客户端没有建立连接，前端进行提示
            return res.json({code:0, data:'no connect'})
         }else{
-          // 该客户端已经建立连接，发送数据
-          console.log('res',res.req.url)
           socket[0].write(data);
-          // const test = res;
-          function aa() {
-            let test = res;
-            console.log('test', test.req.url);
-            return function (data) {
-              console.log('res1', res);
-              // const test = res;
-              console.log("接受到数据",data.toString())
-              acceptData = data.toString();
-              res.status(200).json({code:1, data: data.toString()}).end();}
-            }
-          }
           socket[0].on("data", (data) => {
-            aa()(data)
+            console.log("接受到数据",data.toString())
+            acceptData = data.toString();
+            // 十六进制转十进制进行显示
+
+            res.status(200).json({code:1, data: acceptData}).end();
+            // 关闭数据监听
+            socket[0].removeAllListeners('data');
           })
+        }
         }  
     );
+
+    // sendToken api
+    httpserver.get("/api/sendToken", (req, res) => {
+      // sendToken 报文结构
+      console.log(req.query.token);
+      const userToken = req.query.token;
+      const TYPE = '00';
+      Seq = Seq > 255 ? 0 : Seq + 1;
+      const SEQ = Seq.toString(16).padStart(2, '0'); // 固定长度2,前置补0
+      const Addr = null; // meterAddr的值
+
+      const message1 = "00 01 00 66 00 01";
+
+      const message2 = "C3 01 C1 00 73 00 00 13 28 00 FF 01 01 09";
+
+      const TOKENLENGTH = userToken.match(/ /g).length + 1; // TOKEN的长度 占一个字节
+
+      const MESSAGELENGTH2 = message2.match(/ /g).length + 1 + TOKENLENGTH + 1 ; // message2长度 + token长度 + token长度的长度 占两个字节
+
+      const MESSAGELENGTH1 = message1.match(/ /g).length + 1 + MESSAGELENGTH2 + 2; // message1长度 + message2长度 + message2长度的长度 占1个字节
+
+      const token = [TYPE, SEQ, Addr, MESSAGELENGTH1.toString(16).padStart(2,'0'), message1, MESSAGELENGTH2.toString(16).padStart(4,'0'), message2, TOKENLENGTH.toString(16).padStart(2,'0'), userToken].join(' ');
+
+
+      const socket = tcpManager.getConnectedSockets();
+
+      if(!socket.length){
+        // 该客户端没有建立连接，前端进行提示
+         return res.json({code:0, data:'no connect'})
+      }else{
+        socket[0].write(token);
+      }
+
+    })
 
     httpserver.get("/api_test", (req, res) => {
       res.json({ code: 1, data: "ok" });
