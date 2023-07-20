@@ -4,8 +4,8 @@
  * @Author: Hao
  * @Date: 2023-07-14 13:42:53
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-19 23:10:51
- * @FilePath: \Hes\src\app\home\meterInfo\page.tsx
+ * @LastEditTime: 2023-07-20 11:20:28
+ * @FilePath: \hes\src\app\home\meterInfo\page.tsx
  */
 'use client'
 import {useState, useEffect, useRef} from 'react'
@@ -18,7 +18,7 @@ import { set } from 'mongoose';
 interface MeterType {
     meterno: string,
     protocol: number,
-    builddata: Date,
+    builddate: Date,
     metertype: number,
     metermode: number
 }
@@ -175,6 +175,9 @@ const meterInfo: React.FC = () =>{
 
     // 状态state部分
     // 对话框的开关
+
+    const [modal, contextHolder] = Modal.useModal();
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     // 对话框的props
     const [modalProps, setModalProps] = useState({});
@@ -195,6 +198,8 @@ const meterInfo: React.FC = () =>{
     const [isLoading, setIsLoading] = useState(true)
 
     const [readValue, setReadValue] = useState(null)
+
+    const [readItem, setReadItem] = useState(null)
 
     // wModal中的ref
     const formRef = useRef()
@@ -368,18 +373,23 @@ const meterInfo: React.FC = () =>{
             setIsModalOpen(false)
             // 打开显示数据框
             setIsReadDataModalOpen(true)
+
+            // 获取用户表单数据
             const formData = formRef.current?.formFields();
             const readItem = formData.Cim[0];
+            setReadItem(readItem);
             // 获取选择读取的数据
             // console.log(readItem)
             const result = await fetch(`/api/readdata?readItem=${readItem}&meterno=${value.meterno}`)
                 .then(res=>res.json())
                 .then(res=>{
-
-                    console.log(res.data)
                     // 关闭数据加载框
                     setIsLoading(false)
                     setReadValue(res.data)
+
+                    formRef.current?.formResets();
+                    // 清空表单后刷新页面数据
+                    handleQuery();
                 })
         },
         initvalue: value,})
@@ -463,7 +473,7 @@ const meterInfo: React.FC = () =>{
             <WModal
                 ref={formRef}
                 open={isModalOpen}
-                handleCancel={()=>{setIsModalOpen(false)}}
+                handleCancel={()=>{setIsModalOpen(false);formRef.current?.formResets();handleQuery();}}
                 propValue={modalProps}
                 >
             </WModal> 
@@ -472,17 +482,17 @@ const meterInfo: React.FC = () =>{
             <Modal
                 title="ReadData"
                 open={isReadDataModalOpen}
-                onCancel={()=>{setIsReadDataModalOpen(false);setIsLoading(true);setReadValue(null)}}
-                onOk={()=>{setIsReadDataModalOpen(false);setIsLoading(true);setReadValue(null)}}
+                onCancel={()=>{setIsReadDataModalOpen(false);setIsLoading(true);setReadValue(null);setReadItem(null)}}
+                onOk={()=>{setIsReadDataModalOpen(false);setIsLoading(true);setReadValue(null);setReadItem(null)}}
+                footer={null}
                 >
                 <Spin 
                     tip="Data Connecting"
                     spinning={isLoading}>
                     <Alert
-                    message="The value of the data is:"
+                    message={readValue === "no connect" ? "设备没有建立连接" : ("读取的" + readItem + "值为："+ readValue)}
                     type="success"
-                        /> 
-                        {readValue}
+                    /> 
                 </Spin>
             </Modal>
         </>

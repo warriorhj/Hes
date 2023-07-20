@@ -4,8 +4,8 @@
  * @Author: Hao
  * @Date: 2023-07-18 12:15:57
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-19 23:50:31
- * @FilePath: \Hes\server.js
+ * @LastEditTime: 2023-07-20 14:16:20
+ * @FilePath: \hes\server.js
  */
 
 //引入net模块
@@ -31,6 +31,8 @@ app
     //自定义api 未解决的bug  
     httpserver.get("/api/readdata", (req, res) => {
 
+        console.log(req.query)
+
         const { readItem , meterno} = req.query;
 
         Seq = Seq > 255 ? 0 : Seq + 1;
@@ -42,23 +44,37 @@ app
         const DIRECTION = readDirection[readItem].direction;
         const LENGTH = DIRECTION.match(/ /g).length + 1;
 
-        const data = [TYPE,SEQ, Addr,LENGTH, DIRECTION].join(' ');
+        const data = [TYPE, SEQ, Addr, LENGTH, DIRECTION].join(' ');
        
         // 结合meterno找到对应的socket，对其发送数据
         const socket = tcpManager.getConnectedSockets();
+
+        let acceptData = null;
 
         if(!socket.length){
           // 该客户端没有建立连接，前端进行提示
            return res.json({code:0, data:'no connect'})
         }else{
           // 该客户端已经建立连接，发送数据
+          console.log('res',res.req.url)
           socket[0].write(data);
-          socket[0].on("data", function(data){
-            console.log("接受到数据",data.toString())
-             return res.json({code:1, data:data.toString()})
+          // const test = res;
+          function aa() {
+            let test = res;
+            console.log('test', test.req.url);
+            return function (data) {
+              console.log('res1', res);
+              // const test = res;
+              console.log("接受到数据",data.toString())
+              acceptData = data.toString();
+              res.status(200).json({code:1, data: data.toString()}).end();}
+            }
+          }
+          socket[0].on("data", (data) => {
+            aa()(data)
           })
         }  
-    });
+    );
 
     httpserver.get("/api_test", (req, res) => {
       res.json({ code: 1, data: "ok" });

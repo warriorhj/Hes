@@ -4,27 +4,23 @@
  * @Author: Hao
  * @Date: 2023-07-19 23:58:45
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-20 00:22:21
- * @FilePath: \Hes\src\app\login\page.tsx
+ * @LastEditTime: 2023-07-20 10:02:33
+ * @FilePath: \hes\src\app\login\page.tsx
  */
 'use client'
 import {
-    AlipayOutlined,
     LockOutlined,
-    MobileOutlined,
-    TaobaoOutlined,
     UserOutlined,
-    WeiboOutlined,
   } from '@ant-design/icons';
   import {
     LoginFormPage,
-    ProFormCaptcha,
     ProFormCheckbox,
     ProFormText,
   } from '@ant-design/pro-components';
-  import { Button, Divider, message, Space, Tabs } from 'antd';
+  import { Tabs } from 'antd';
   import type { CSSProperties } from 'react';
   import { useState } from 'react';
+  import { useRouter } from 'next/navigation';
   
   type LoginType = 'phone' | 'account';
   
@@ -37,6 +33,21 @@ import {
 
   const Login = () => {
     const [loginType, setLoginType] = useState<LoginType>('account');
+    const [userName, setUserName] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
+
+    const router = useRouter();
+
+    const handleLoginEvent = async (values: any) => {
+      console.log(values);
+      console.log(userName);
+      // 判断用户名和密码是否正确
+      if (userName === 'admin' && password === 'ant.design') {
+        // 登录成功 跳转到home页面
+        router.push('/home/meterInfo');
+      }
+    };
+
     return (
       <div
         style={{
@@ -49,18 +60,8 @@ import {
           backgroundImageUrl="https://p2.itc.cn/images01/20220429/ce3a7a5297264015a015fb090d489efe.png"
           logo="https://github.githubassets.com/images/modules/logos_page/Octocat.png"
           title="京仪北方HES管理系统"
-          actions={
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                flexDirection: 'column',
-              }}
-            >
-            </div>
-          }
-        >
+          onFinish={handleLoginEvent}
+          >
           <Tabs
             centered
             activeKey={loginType}
@@ -75,6 +76,7 @@ import {
                 fieldProps={{
                   size: 'large',
                   prefix: <UserOutlined className={'prefixIcon'} />,
+                  onChange: (e) => { setUserName(e.target.value) },
                 }}
                 placeholder={'用户名: admin or user'}
                 rules={[
@@ -89,6 +91,7 @@ import {
                 fieldProps={{
                   size: 'large',
                   prefix: <LockOutlined className={'prefixIcon'} />,
+                  onChange: (e) => { setPassword(e.target.value) },
                 }}
                 placeholder={'密码: ant.design'}
                 rules={[

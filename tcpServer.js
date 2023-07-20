@@ -4,8 +4,8 @@
  * @Author: Hao
  * @Date: 2023-07-18 16:16:26
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-19 22:54:00
- * @FilePath: \Hes\tcpServer.js
+ * @LastEditTime: 2023-07-20 11:24:34
+ * @FilePath: \hes\tcpServer.js
  */
 const net = require('net');
 const tcpManager = require('./tcp_manage')
@@ -37,6 +37,7 @@ const tcpserver = net.createServer(function(socket){
 
     socket.on("end", function(data){
         console.log("client disconnet");
+        tcpManager.removeSocket(socket)
     })
 })
 

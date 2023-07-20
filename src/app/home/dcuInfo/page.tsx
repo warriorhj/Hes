@@ -4,7 +4,7 @@
  * @Author: Hao
  * @Date: 2023-07-14 13:43:11
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-18 09:11:34
+ * @LastEditTime: 2023-07-20 11:20:34
  * @FilePath: \hes\src\app\home\dcuInfo\page.tsx
  */
 'use client'
@@ -17,7 +17,7 @@ import WModal from '@/app/components/WModal';
 interface DcuType {
     dcuno: string,
     protocol: number,
-    builddata: Date,
+    builddate: Date,
     orgcode: string,
 }
 

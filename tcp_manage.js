@@ -20,8 +20,18 @@ function getConnectedSockets() {
     return connectedSockets;
 }
 
+// 删除已连接的socket
+function removeSocket(socket) {
+    const index = connectedSockets.indexOf(socket);
+    if (index !== -1) {
+        connectedSockets.splice(index, 1);
+    }
+}
+
+
 // 导出函数或变量
 module.exports = {
   addSocket,
   getConnectedSockets,
+  removeSocket
 };
