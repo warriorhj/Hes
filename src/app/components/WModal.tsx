@@ -4,7 +4,7 @@
  * @Author: Hao
  * @Date: 2023-07-15 13:58:11
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-17 14:29:49
+ * @LastEditTime: 2023-07-24 15:50:35
  * @FilePath: \hes\src\app\components\WModal.tsx
  */
 // 封装model对话框: 根据传入的props可以渲染不同的modal，如表单，文字提示
@@ -15,16 +15,16 @@ import { Modal, Button, Form, Input, Cascader} from 'antd';
 interface ModelProps {
     propValue:any;
     open: boolean;
-    handleCancel: () => void;
     children?: React.ReactNode;
     okText?: string;
     cancelText?: string;
+    
 }
 
 const WModal = (props: ModelProps, ref) =>{
 
-    const {open, propValue, handleCancel} = props;
-    const {title, handleOk, content, initvalue, okText, cancelText} = propValue;
+    const {open, propValue} = props;
+    const {title, handleOk, content, initvalue, okText, cancelText, handleCancel} = propValue;
     const [ModalForm] = Form.useForm();
     const formRef = useRef();
 

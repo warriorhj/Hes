@@ -4,12 +4,12 @@
  * @Author: Hao
  * @Date: 2023-07-14 13:42:53
  * @LastEditors: Hao
- * @LastEditTime: 2023-07-20 15:50:27
+ * @LastEditTime: 2023-07-24 16:11:43
  * @FilePath: \hes\src\app\home\meterInfo\page.tsx
  */
 'use client'
 import {useState, useEffect, useRef} from 'react'
-import {Table, Tag, Space, Input, Button, Modal, Form, Popconfirm, Spin, Alert} from "antd";
+import {Table, Tag, Space, Input, Button, Modal, Form, Popconfirm, Spin, Alert, message} from "antd";
 import type {ColumnsType} from 'antd/es/table';
 import * as dayjs from 'dayjs';
 import WModal from '@/app/components/WModal';
@@ -64,16 +64,6 @@ const readMeterDataOptions:Option[] = [
         value: "prepay-current balance",
         label: "prepay-current balance"
     },
-    {
-        value: "remote_disconnet(data)",
-        label: "remote_disconnet(data)"
-    },{
-        value: "remote_reconnet(data)",
-        label: "remote_reconnet(data)"
-    },{
-        value: "Token gateway enter token",
-        label: "Token gateway enter token"
-    }
 ]
 
 // meter add 和 change 表单数据
@@ -175,8 +165,8 @@ const meterInfo: React.FC = () =>{
 
     // 状态state部分
     // 对话框的开关
-
-    const [modal, contextHolder] = Modal.useModal();
+    
+    // const [modal, contextHolder] = Modal.useModal();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     // 对话框的props
@@ -203,6 +193,9 @@ const meterInfo: React.FC = () =>{
 
     // wModal中的ref
     const formRef = useRef()
+
+    // 提示框
+    const [messageApi, contextHolder] = message.useMessage();
 
 
     // Table中的columns
@@ -272,7 +265,8 @@ const meterInfo: React.FC = () =>{
     const handleAddMeter = () =>{
         setIsModalOpen(true)
         
-        const tempProps = Object.assign({}, MeterProps, {handleOk: async ()=>{
+        const tempProps = Object.assign({}, MeterProps, {
+            handleOk: async ()=>{
             // 添加meter接口
             const insertData = formRef.current?.formFields();
             const result = await fetch('/api/meter/insertMeter',{
@@ -285,7 +279,9 @@ const meterInfo: React.FC = () =>{
             setIsModalOpen(false)
             // 刷新页面数据
             handleQuery();
-        },})
+        },
+        handleCancel: generalCancel,
+    })
         setModalProps(tempProps)
     }
 
@@ -356,6 +352,7 @@ const meterInfo: React.FC = () =>{
             // 刷新页面数据
             handleQuery();
             },
+            handleCancel: generalCancel,
             initvalue: value,
         })
         tempProps.title = 'Change Meter'
@@ -393,6 +390,7 @@ const meterInfo: React.FC = () =>{
                     handleQuery();
                 })
         },
+        handleCancel: generalCancel,
         initvalue: value,})
         setModalProps(tempProps)
     }
@@ -411,15 +409,24 @@ const meterInfo: React.FC = () =>{
                     const result = await fetch(`/api/sendToken?token=${formData.token}&meterno=${value.meterno}`)
                     .then(res=>res.json())
                     .then(res=>{
+                        console.log(res)
 
                         formRef.current?.formResets();
                         handleQuery();
+
+                        // 弹出成功或者失败提示
+                        const type = res.data ? 'success' : 'error';
+                        messageApi.open({
+                            type: type,
+                            content: `Send Token ${type}`,
+                        })
                         
                     })
 
                     
                     
                 },
+                handleCancel: generalCancel,
                 initvalue: value,
             })
         setModalProps(tempProps)
@@ -430,9 +437,34 @@ const meterInfo: React.FC = () =>{
         // 打开对话框，设置form的值
         setIsModalOpen(true)
         const tempProps = Object.assign({}, ActionProps, {
-            handleOk: ()=>{
+            handleOk: async ()=>{
                 // action接口
+                const result = await fetch(`/api/action?readItem=remote_disconnect(data)&meterno=${value.meterno}`)
+                .then(res=>res.json())
+                .then(res=>{
+                    console.log(res)
+                    // 弹出成功或者失败提示
+                    const type = res.data ? 'success' : 'error';
+                    messageApi.open({
+                        type: type,
+                        content: `Disconnect ${type}`,
+                    })
+                })
                 setIsModalOpen(false)
+            },
+            handleCancel: async ()=>{
+                const result = await fetch(`/api/action?readItem=remote_reconnect(data)&meterno=${value.meterno}`).
+                then(res=>res.json())
+                .then(res=>{
+                    console.log(res)
+                    const type = res.data ? 'success' : 'error';
+                    messageApi.open({
+                        type: type,
+                        content: `Reconnect ${type}`,
+                    })
+                })
+                setIsModalOpen(false)
+                
             },
             okText: 'Disconnect',
             cancelText: 'Connect',
@@ -451,21 +483,20 @@ const meterInfo: React.FC = () =>{
         onChange: onSelectChange,
     }
 
-   
-    
-
-
     // 批量删除按钮禁用
     useEffect(() => {
         handleQuery();
         setIsDisabled(selectedRowKeys.length >= 2 ? false : true);
 
-        
-
     },[selectedRowKeys])
 
+    const generalCancel = () =>{
+        setIsModalOpen(false);
+        formRef.current?.formResets();
+        handleQuery();
+    }
 
-    
+
     return (
         <>
             {/* 封装成searchList */}
@@ -488,7 +519,7 @@ const meterInfo: React.FC = () =>{
             <WModal
                 ref={formRef}
                 open={isModalOpen}
-                handleCancel={()=>{setIsModalOpen(false);formRef.current?.formResets();handleQuery();}}
+                // handleCancel={()=>{setIsModalOpen(false);formRef.current?.formResets();handleQuery();}}
                 propValue={modalProps}
                 >
             </WModal> 
@@ -510,6 +541,9 @@ const meterInfo: React.FC = () =>{
                     /> 
                 </Spin>
             </Modal>
+
+            {contextHolder}
+
         </>
     )
 }
